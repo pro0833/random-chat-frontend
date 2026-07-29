@@ -1,0 +1,106 @@
+name: Build & Deploy Random Chat Frontend (Dev)
+
+on:
+  push:
+    branches: ["main"]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    if: contains(github.event.head_commit.message, 'deploy-dev')
+
+    steps:
+
+      # 1. Checkout code
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 2. Setup Node.js
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+
+      # 3. Install dependencies
+      - name: Install dependencies
+        run: npm ci
+
+      # 4. Build Angular application
+      - name: Build Angular application
+        run: npm run build
+
+      # 5. Verify build output
+      - name: Verify Angular build
+        run: |
+          echo "Checking Angular build output..."
+          test -f dist/frontend/browser/index.html
+          echo "Angular build verified successfully."
+
+      # 6. Setup SSH Agent
+      - name: Setup SSH Agent
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      # 7. Prepare temporary deployment directory
+      - name: Prepare EC2 deployment directory
+        run: |
+          ssh -o StrictHostKeyChecking=no \
+          ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} \
+          "rm -rf /tmp/random-chat-frontend && mkdir -p /tmp/random-chat-frontend"
+
+      # 8. Upload Angular build
+      - name: Upload Angular build to EC2
+        run: |
+          echo "Uploading Angular frontend..."
+
+          scp -r -o StrictHostKeyChecking=no \
+          dist/frontend/browser/. \
+          ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}:/tmp/random-chat-frontend/
+
+      # 9. Activate new frontend
+      - name: Activate frontend
+        run: |
+          ssh -o StrictHostKeyChecking=no \
+          ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} << 'EOF'
+
+            set -e
+
+            echo "Starting frontend deployment..."
+
+            DEPLOY_DIR="/opt/random-chat/frontend/current"
+            TEMP_DIR="/tmp/random-chat-frontend"
+            BACKUP_DIR="/opt/random-chat/backups/frontend"
+
+            echo "Creating backup directory..."
+            mkdir -p "$BACKUP_DIR"
+
+            echo "Backing up current frontend..."
+            rm -rf "$BACKUP_DIR/previous"
+            mkdir -p "$BACKUP_DIR/previous"
+
+            cp -a "$DEPLOY_DIR/." "$BACKUP_DIR/previous/" 2>/dev/null || true
+
+            echo "Removing old frontend files..."
+            rm -rf "$DEPLOY_DIR"/*
+
+            echo "Copying new frontend files..."
+            cp -a "$TEMP_DIR/." "$DEPLOY_DIR/"
+
+            echo "Setting ownership..."
+            chown -R ubuntu:ubuntu "$DEPLOY_DIR"
+
+            echo "Testing Nginx configuration..."
+            sudo nginx -t
+
+            echo "Reloading Nginx..."
+            sudo systemctl reload nginx
+
+            echo "Cleaning temporary files..."
+            rm -rf "$TEMP_DIR"
+
+            echo "Frontend deployment completed successfully."
+
+          EOF
