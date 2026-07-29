@@ -1,374 +1,457 @@
-```html
 <div class="app-shell">
 
   <!-- ================= HEADER ================= -->
 
   <header class="header">
 
-    <div class="brand">
+  <div class="brand">
+  <div class="brand-icon">R</div>
 
-      <div class="brand-icon">
-        R
-      </div>
+  <div class="brand-text">
+    <h1>Random<span>Chat</span></h1>
+    <p>Meet someone new</p>
+  </div>
+</div>
 
-      <div class="brand-text">
-        <h1>Random<span>Chat</span></h1>
-        <p>Meet someone new</p>
-      </div>
+<div class="live-status">
 
-    </div>
+  <span
+    class="status-dot"
+    [class.searching]="
+      chatState === 'REQUESTING_MEDIA' ||
+      chatState === 'CONNECTING' ||
+      chatState === 'WAITING' ||
+      chatState === 'MATCHED'
+    "
+    [class.connected]="chatState === 'CONNECTED'">
+  </span>
 
+  <span>
+    {{
+      chatState === 'CONNECTED'
+        ? 'Connected'
+        : chatState === 'WAITING'
+          ? 'Searching'
+          : chatState === 'MATCHED' || chatState === 'CONNECTING'
+            ? 'Connecting'
+            : chatState === 'REQUESTING_MEDIA'
+              ? 'Starting'
+              : 'Ready'
+    }}
+  </span>
 
-    <div class="live-status">
-
-      <span
-        class="status-dot"
-        [class.searching]="chatState === 'WAITING' || chatState === 'CONNECTING'"
-        [class.connected]="chatState === 'CONNECTED'">
-      </span>
-
-      <span>
-        {{
-          chatState === 'CONNECTED'
-            ? 'Connected'
-            : chatState === 'WAITING'
-              ? 'Searching'
-              : chatState === 'MATCHED' || chatState === 'CONNECTING'
-                ? 'Connecting'
-                : 'Ready'
-        }}
-      </span>
-
-    </div>
+</div>
 
   </header>
-
 
   <!-- ================= MAIN ================= -->
 
   <main class="main-content">
 
+<!-- ================= HERO ================= -->
 
-    <!-- HERO -->
+<section class="hero">
 
-    <section class="hero">
+  <div class="eyebrow">
+    <span class="eyebrow-dot"></span>
+    PRIVATE • PEER-TO-PEER
+  </div>
 
-      <div class="eyebrow">
-        <span>●</span>
-        PRIVATE • PEER-TO-PEER
+  <h2>
+    Meet someone
+    <span>new.</span>
+  </h2>
+
+  <p class="subtitle">
+    Start a random video conversation with someone from anywhere.
+  </p>
+
+</section>
+
+
+<!-- ================= VIDEO AREA ================= -->
+
+<section class="video-grid">
+
+
+  <!-- ================= LOCAL VIDEO ================= -->
+
+  <div class="video-card">
+
+    <video
+      #localVideo
+      autoplay
+      playsinline
+      muted>
+    </video>
+
+
+    <!-- Camera placeholder -->
+
+    <div
+      class="video-placeholder"
+      *ngIf="!localStream">
+
+      <div class="placeholder-icon">
+        📹
       </div>
 
-      <h2>
-        Meet someone
-        <span>new.</span>
-      </h2>
+      <strong>Your camera</strong>
 
-      <p class="subtitle">
-        Start a random video conversation with someone from anywhere.
-      </p>
+      <span>
+        Start a chat to enable your camera
+      </span>
 
-    </section>
+    </div>
 
 
-    <!-- ================= VIDEO AREA ================= -->
-
-    <section class="video-grid">
+    <div class="video-overlay"></div>
 
 
-      <!-- LOCAL VIDEO -->
+    <div class="video-label">
 
-      <div class="video-card">
+      <span class="you-dot"></span>
 
-        <video
-          #localVideo
-          autoplay
-          playsinline
-          muted>
-        </video>
+      You
+
+    </div>
 
 
-        <!-- Local placeholder -->
+    <!-- Camera state -->
 
-        <div
-          class="video-placeholder"
-          *ngIf="!localStream">
-
-          <div class="placeholder-icon">
-            📹
-          </div>
-
-          <span>
-            Your camera
-          </span>
-
-        </div>
-
-
-        <div class="video-overlay"></div>
-
-
-        <div class="video-label">
-
-          <span class="you-dot"></span>
-
-          You
-
-        </div>
-
-
-        <div class="camera-state"
-             *ngIf="localStream">
-
-          {{ isCameraEnabled ? 'Camera on' : 'Camera off' }}
-
-        </div>
-
-      </div>
-
-
-
-      <!-- STRANGER VIDEO -->
-
-      <div class="video-card stranger-card">
-
-        <video
-          #remoteVideo
-          autoplay
-          playsinline>
-        </video>
-
-
-        <!-- Stranger placeholder -->
-
-        <div
-          class="video-placeholder stranger-placeholder"
-          *ngIf="chatState !== 'CONNECTED'">
-
-          <div class="stranger-avatar">
-            ?
-          </div>
-
-          <strong>
-            {{
-              chatState === 'WAITING'
-                ? 'Finding someone...'
-                : chatState === 'MATCHED' || chatState === 'CONNECTING'
-                  ? 'Connecting...'
-                  : 'Stranger'
-            }}
-          </strong>
-
-          <span>
-            {{
-              chatState === 'WAITING'
-                ? 'Please wait'
-                : 'Your video will appear here'
-            }}
-          </span>
-
-        </div>
-
-
-        <div class="video-overlay"></div>
-
-
-        <div class="video-label">
-
-          <span class="user-icon">
-            👤
-          </span>
-
-          Stranger
-
-        </div>
-
-
-        <div
-          class="connected-badge"
-          *ngIf="chatState === 'CONNECTED'">
-
-          <span></span>
-          Connected
-
-        </div>
-
-      </div>
-
-    </section>
-
-
-
-    <!-- ================= STATUS ================= -->
-
-    <div class="connection-status">
+    <div
+      class="camera-state"
+      *ngIf="localStream">
 
       <span
-        class="status-pulse"
-        [class.active]="chatState === 'CONNECTED'">
+        class="camera-state-dot"
+        [class.off]="!isCameraEnabled">
       </span>
 
-      <span>
-        {{ message }}
-      </span>
+      {{ isCameraEnabled ? 'Camera on' : 'Camera off' }}
 
     </div>
 
+  </div>
 
 
-    <!-- ================= CONTROLS ================= -->
+  <!-- ================= STRANGER VIDEO ================= -->
 
-    <section class="controls-area">
+  <div class="video-card stranger-card">
 
-
-      <!-- START -->
-
-      <button
-        *ngIf="
-          chatState === 'IDLE' ||
-          chatState === 'ENDED' ||
-          chatState === 'DISCONNECTED'
-        "
-        class="start-button"
-        (click)="startChat()">
-
-        <span class="button-icon">
-          📹
-        </span>
-
-        Start Chat
-
-      </button>
+    <video
+      #remoteVideo
+      autoplay
+      playsinline>
+    </video>
 
 
+    <!-- Stranger placeholder -->
 
-      <!-- ACTIVE CHAT CONTROLS -->
+    <div
+      class="video-placeholder stranger-placeholder"
+      *ngIf="chatState !== 'CONNECTED'">
 
-      <div
-        class="active-controls"
-        *ngIf="
+      <div class="stranger-avatar">
+
+        {{
           chatState === 'WAITING' ||
-          chatState === 'CONNECTING' ||
           chatState === 'MATCHED' ||
-          chatState === 'CONNECTED'
-        ">
-
-
-        <!-- MIC -->
-
-        <button
-          class="control-button"
-          [class.active]="isMicEnabled"
-          [class.off]="!isMicEnabled"
-          (click)="toggleMicrophone()"
-          [attr.aria-label]="
-            isMicEnabled
-              ? 'Mute microphone'
-              : 'Unmute microphone'
-          ">
-
-          <span class="control-icon">
-            {{ isMicEnabled ? '🎤' : '🔇' }}
-          </span>
-
-          <span class="control-text">
-            {{ isMicEnabled ? 'Mute' : 'Unmute' }}
-          </span>
-
-        </button>
-
-
-        <!-- CAMERA -->
-
-        <button
-          class="control-button"
-          [class.active]="isCameraEnabled"
-          [class.off]="!isCameraEnabled"
-          (click)="toggleCamera()"
-          [attr.aria-label]="
-            isCameraEnabled
-              ? 'Turn camera off'
-              : 'Turn camera on'
-          ">
-
-          <span class="control-icon">
-            {{ isCameraEnabled ? '📹' : '🚫' }}
-          </span>
-
-          <span class="control-text">
-            {{ isCameraEnabled ? 'Camera' : 'Camera Off' }}
-          </span>
-
-        </button>
-
-
-        <!-- NEXT -->
-
-        <button
-          class="next-button"
-          (click)="nextChat()">
-
-          <span>
-            ⏭
-          </span>
-
-          Next
-
-        </button>
-
-
-        <!-- END -->
-
-        <button
-          class="end-button"
-          (click)="endChat()">
-
-          <span>
-            ✕
-          </span>
-
-          End
-
-        </button>
+          chatState === 'CONNECTING'
+            ? '...'
+            : '?'
+        }}
 
       </div>
 
-    </section>
+      <strong>
 
+        {{
+          chatState === 'WAITING'
+            ? 'Finding someone...'
+            : chatState === 'MATCHED' ||
+              chatState === 'CONNECTING'
+              ? 'Connecting...'
+              : 'Stranger'
+        }}
 
-
-    <!-- ================= PRIVACY ================= -->
-
-    <div class="privacy-note">
-
-      <span class="lock-icon">
-        🔒
-      </span>
+      </strong>
 
       <span>
-        Your video connection is peer-to-peer.
-        We don't record your video.
+
+        {{
+          chatState === 'WAITING'
+            ? 'Please wait while we find someone'
+            : chatState === 'MATCHED' ||
+              chatState === 'CONNECTING'
+              ? 'Establishing video connection'
+              : 'Your stranger will appear here'
+        }}
+
       </span>
 
     </div>
 
+
+    <div class="video-overlay"></div>
+
+
+    <div class="video-label">
+
+      <span class="user-icon">
+        👤
+      </span>
+
+      Stranger
+
+    </div>
+
+
+    <!-- Connected badge -->
+
+    <div
+      class="connected-badge"
+      *ngIf="chatState === 'CONNECTED'">
+
+      <span></span>
+
+      Connected
+
+    </div>
+
+  </div>
+
+</section>
+
+
+<!-- ================= CONNECTION STATUS ================= -->
+
+<div class="connection-status">
+
+  <span
+    class="status-pulse"
+    [class.active]="chatState === 'CONNECTED'">
+  </span>
+
+  <span>
+    {{ message }}
+  </span>
+
+</div>
+
+
+<!-- ================= CONTROLS ================= -->
+
+<section class="controls-area">
+
+
+  <!-- ================= START CHAT ================= -->
+
+  <button
+    *ngIf="
+      chatState === 'IDLE' ||
+      chatState === 'ENDED' ||
+      chatState === 'DISCONNECTED'
+    "
+    type="button"
+    class="start-button"
+    (click)="startChat()">
+
+    <span class="button-icon">
+      📹
+    </span>
+
+    <span>
+      Start Chat
+    </span>
+
+  </button>
+
+
+  <!-- ================= STARTING / SEARCHING ================= -->
+
+  <div
+    class="searching-button"
+    *ngIf="
+      chatState === 'REQUESTING_MEDIA' ||
+      chatState === 'CONNECTING' ||
+      chatState === 'WAITING' ||
+      chatState === 'MATCHED'
+    ">
+
+    <span class="search-spinner"></span>
+
+    <span>
+
+      {{
+        chatState === 'REQUESTING_MEDIA'
+          ? 'Starting camera...'
+          : chatState === 'WAITING'
+            ? 'Searching for a stranger...'
+            : 'Connecting to stranger...'
+      }}
+
+    </span>
+
+  </div>
+
+
+  <!-- ================= ACTIVE CONTROLS ================= -->
+
+  <div
+    class="active-controls"
+    *ngIf="
+      chatState === 'WAITING' ||
+      chatState === 'CONNECTING' ||
+      chatState === 'MATCHED' ||
+      chatState === 'CONNECTED'
+    ">
+
+
+    <!-- MICROPHONE -->
+
+    <button
+      type="button"
+      class="control-button"
+      [class.active]="isMicEnabled"
+      [class.off]="!isMicEnabled"
+      (click)="toggleMicrophone()"
+      [attr.aria-label]="
+        isMicEnabled
+          ? 'Mute microphone'
+          : 'Unmute microphone'
+      ">
+
+      <span class="control-icon">
+
+        {{
+          isMicEnabled
+            ? '🎤'
+            : '🔇'
+        }}
+
+      </span>
+
+      <span class="control-text">
+
+        {{
+          isMicEnabled
+            ? 'Mute'
+            : 'Unmute'
+        }}
+
+      </span>
+
+    </button>
+
+
+    <!-- CAMERA -->
+
+    <button
+      type="button"
+      class="control-button"
+      [class.active]="isCameraEnabled"
+      [class.off]="!isCameraEnabled"
+      (click)="toggleCamera()"
+      [attr.aria-label]="
+        isCameraEnabled
+          ? 'Turn camera off'
+          : 'Turn camera on'
+      ">
+
+      <span class="control-icon">
+
+        {{
+          isCameraEnabled
+            ? '📹'
+            : '🚫'
+        }}
+
+      </span>
+
+      <span class="control-text">
+
+        {{
+          isCameraEnabled
+            ? 'Camera'
+            : 'Camera Off'
+        }}
+
+      </span>
+
+    </button>
+
+
+    <!-- NEXT -->
+
+    <button
+      type="button"
+      class="next-button"
+      (click)="nextChat()">
+
+      <span class="next-icon">
+        ⏭
+      </span>
+
+      <span>
+        Next
+      </span>
+
+    </button>
+
+
+    <!-- END -->
+
+    <button
+      type="button"
+      class="end-button"
+      (click)="endChat()">
+
+      <span class="end-icon">
+        ✕
+      </span>
+
+      <span>
+        End
+      </span>
+
+    </button>
+
+  </div>
+
+</section>
+
+
+<!-- ================= PRIVACY ================= -->
+
+<div class="privacy-note">
+
+  <span class="lock-icon">
+    🔒
+  </span>
+
+  <span>
+    Your video connection is peer-to-peer.
+    We don't record your video.
+  </span>
+
+</div>
+
   </main>
-
-
 
   <!-- ================= FOOTER ================= -->
 
   <footer class="footer">
 
-    <p>
-      Developed by
-      <strong>Prasad & Aditya</strong>
-    </p>
+<p>
+  Developed by
+  <strong>Prasad &amp; Aditya</strong>
+</p>
 
-    <p class="footer-tech">
-      Random Video Chat Platform
-    </p>
+<p class="footer-tech">
+  Random Video Chat Platform
+</p>
 
   </footer>
 
 </div>
-```
