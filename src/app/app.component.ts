@@ -6,6 +6,8 @@ import {
   ViewChild
 } from '@angular/core';
 
+import { CommonModule } from '@angular/common';
+
 import {
   WebSocketConnectionState,
   WebSocketService
@@ -23,6 +25,8 @@ type ChatState =
 
 @Component({
   selector: 'app-root',
+  standalone: true,
+  imports: [CommonModule],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css'
 })

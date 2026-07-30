@@ -4,6 +4,7 @@
 
   <header class="header">
 
+    
   <div class="brand">
   <div class="brand-icon">R</div>
 
@@ -248,26 +249,14 @@
   <!-- ================= START CHAT ================= -->
 
   <button
-    *ngIf="
-      chatState === 'IDLE' ||
-      chatState === 'ENDED' ||
-      chatState === 'DISCONNECTED'
-    "
-    type="button"
-    class="start-button"
-    (click)="startChat()">
+  class="start-button"
+  (click)="startChat()">
 
-    <span class="button-icon">
-      📹
-    </span>
+  <span class="button-icon">📹</span>
 
-    <span>
-      Start Chat
-    </span>
+  Start Chat
 
-  </button>
-
-
+</button>
   <!-- ================= STARTING / SEARCHING ================= -->
 
   <div
